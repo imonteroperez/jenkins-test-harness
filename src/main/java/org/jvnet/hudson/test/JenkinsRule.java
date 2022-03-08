@@ -786,14 +786,15 @@ public class JenkinsRule implements TestRule, MethodRule, RootAction {
         qtp.setName("Jetty (JenkinsRule)");
         Server server = new Server(qtp);
 
-        WebAppContext context = new WebAppContext(WarExploder.getExplodedDir().getPath(), contextPath);
-        context.setClassLoader(classLoader);
+        File explodedDir = WarExploder.getExplodedDir();
+        WebAppContext context = new WebAppContext(explodedDir.getPath(), contextPath);
+        context.setClassLoader(new URLClassLoader(new URL[] { explodedDir.toURI().toURL() }, classLoader));
         context.setConfigurations(new Configuration[]{new WebXmlConfiguration()});
         context.addBean(new NoListenerConfiguration(context));
         server.setHandler(context);
         context.setMimeTypes(MIME_TYPES);
         context.getSecurityHandler().setLoginService(loginServiceSupplier.get());
-        context.setResourceBase(WarExploder.getExplodedDir().getPath());
+        context.setResourceBase(explodedDir.getPath());
 
         ServerConnector connector = new ServerConnector(server);
         HttpConfiguration config = connector.getConnectionFactory(HttpConnectionFactory.class).getHttpConfiguration();
